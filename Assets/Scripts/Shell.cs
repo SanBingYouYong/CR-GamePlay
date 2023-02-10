@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Shell : MonoBehaviour
 {
+
+    public float lifetime = 15f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -13,14 +16,10 @@ public class Shell : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.name.Contains("enemy"))
+        lifetime -= Time.deltaTime;
+        if (lifetime < 0 )
         {
-
+            Destroy(gameObject);
         }
     }
 }

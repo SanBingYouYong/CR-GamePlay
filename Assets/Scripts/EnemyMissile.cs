@@ -13,6 +13,10 @@ public class EnemyMissile : MonoBehaviour
     public AudioSource audioSource;
     public ParticleSystem explosionParticles;
 
+    public float lifetime = 30f;
+
+    public float damage = 30f;
+
     private void Start()
     {
         protagonist = GameObject.Find("HullProtagonist");
@@ -30,6 +34,12 @@ public class EnemyMissile : MonoBehaviour
         {
             StartCoroutine(Explode(false));
         }
+        // lifetime update
+        lifetime -= Time.deltaTime;
+        if (lifetime < 0)
+        {
+            Explode(true);
+        }
     }
 
     private void FixedUpdate()
@@ -46,6 +56,7 @@ public class EnemyMissile : MonoBehaviour
         if (collision.gameObject.name == "HullProtagonist")
         {
             StartCoroutine(Explode());
+            protagonist.GetComponent<Protagonist>().health -= damage;
         }
         else if (collision.gameObject.name.Contains("shell"))
         {
@@ -56,7 +67,7 @@ public class EnemyMissile : MonoBehaviour
 
     public IEnumerator Explode(bool explosion=true)
     {
-        worldWill.currentMissiles--;
+        worldWill.currentMissiles.Remove(gameObject);
         Vector3 curPos = transform.position;
         gameObject.GetComponent<MeshRenderer>().enabled = false;
         if (explosion)

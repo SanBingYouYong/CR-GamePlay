@@ -31,8 +31,11 @@ public class MainGun : MonoBehaviour
         Debug.Log("Playing Firing Particles: " + explosionParticles.name);
         explosionParticles.Play();
         audioSource.Play();
-        GameObject ball = Instantiate(shell, transform.position, transform.rotation);
-
+        Vector3 shellRotation = transform.rotation.eulerAngles;
+        shellRotation.x += Random.Range(-10f, 10f);
+        shellRotation.y += Random.Range(-10f, 10f);
+        shellRotation.z += Random.Range(-10f, 10f);
+        GameObject ball = Instantiate(shell, transform.position, Quaternion.Euler(shellRotation));
         ball.GetComponent<Rigidbody>().AddRelativeForce(new Vector3
                                              (0, 0, shellSpeed));
     }

@@ -28,6 +28,10 @@ public class Protagonist : MonoBehaviour
     /// </summary>
     public List<GameObject> gears;
 
+    public float health = 100f;
+    public float maxHealth = 100f;
+    public float recoverSpeed = 5f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -37,7 +41,14 @@ public class Protagonist : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (health < maxHealth)
+        {
+            health += recoverSpeed * Time.deltaTime;
+        }
+        if (health <= 0)
+        {
+            Explode();
+        }
     }
 
     private void FixedUpdate()
@@ -57,6 +68,11 @@ public class Protagonist : MonoBehaviour
             // Not moving
             SetWheelsState(false, false);
         }
+    }
+
+    public void Explode()
+    {
+        Time.timeScale = 0.25f;
     }
 
     /// <summary>

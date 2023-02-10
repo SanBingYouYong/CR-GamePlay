@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.UI;
 using UnityEngine;
 
 public class WorldWill : MonoBehaviour
@@ -7,7 +9,7 @@ public class WorldWill : MonoBehaviour
 
     public int maxEnemies = 10;
 
-    public int currentMissiles = 0;
+    public List<GameObject> currentMissiles;
 
     public GameObject protagonist;
 
@@ -21,9 +23,13 @@ public class WorldWill : MonoBehaviour
 
     public float wreckSpeed = 10f;
 
+    public float enemySpawnGap = 1f;
+    private float spawnCountDown = 0f;
+
     // Start is called before the first frame update
     void Start()
     {
+        //currentMissiles = new List<GameObject>();
         protagonist = GameObject.Find("HullProtagonist");
         wreckPoolSize = missileWreckModels.Count - 1;
         generatedWrecks = new Queue<GameObject>();
@@ -37,10 +43,25 @@ public class WorldWill : MonoBehaviour
             Debug.Log("Peace. Do nothing. ");
             return;
         }
-        if (currentMissiles <= maxEnemies)
+        if (currentMissiles.Count < maxEnemies)
         {
-            SpawnMissile();
+            spawnCountDown -= Time.deltaTime;
+            if (spawnCountDown <= 0f)
+            {
+                Debug.Log("Generating missile: " + currentMissiles.Count);
+                spawnCountDown = enemySpawnGap;
+                SpawnMissile();
+            }
         }
+        else
+        {
+            Debug.Log("Too many missiles! " + currentMissiles.Count);
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        
     }
 
     private void SpawnMissile()
@@ -48,12 +69,12 @@ public class WorldWill : MonoBehaviour
         Vector3 centre = protagonist.transform.position;
         Vector3 missilePosition = new Vector3(
             Random.Range(centre.x - 100, centre.x + 100), 
-            Random.Range(0, 10), // height
+            Random.Range(40, 50), // height
             Random.Range(centre.z - 100, centre.z + 100));
         Vector3 orientation = new Vector3(
             0f, 0f, 0f);
-        Instantiate(missile, missilePosition, Quaternion.Euler(orientation));
-        currentMissiles++;
+        currentMissiles.Add(
+            Instantiate(missile, missilePosition, Quaternion.Euler(orientation)));
     }
 
     public GameObject GetRandomWreckModel()
