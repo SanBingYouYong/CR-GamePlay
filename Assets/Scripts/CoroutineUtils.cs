@@ -4,8 +4,15 @@ using UnityEngine;
 
 public static class CoroutineUtils
 {
-    public static IEnumerator Wait(float seconds)
+    /// <summary>
+    /// To simulate a temporary pause behavior. 
+    /// </summary>
+    /// <param name="seconds"></param>
+    /// <returns></returns>
+    public static IEnumerator Sleep(float seconds)
     {
-        yield return new WaitForSeconds(seconds);
+        Time.timeScale = 0.0001f;
+        yield return new WaitForSecondsRealtime(seconds * Time.timeScale);
+        Time.timeScale = 1;
     }
 }

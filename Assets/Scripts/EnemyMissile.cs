@@ -4,37 +4,46 @@ using UnityEngine;
 
 public class EnemyMissile : MonoBehaviour
 {
-    public GameObject protagonist;
+    private GameObject protagonist;
+    private WorldWill worldWill;
 
+    // MISSILE STATS: //
+    /// <summary>
+    /// Speed of missile movements. 
+    /// </summary>
     public float speed = 25f;
-
-    public WorldWill worldWill;
-
-    public AudioSource audioSource;
-    public ParticleSystem explosionParticles;
-
+    /// <summary>
+    /// After specified lifetime, missile will explode. 
+    /// </summary>
     public float lifetime = 30f;
-
+    /// <summary>
+    /// Damage it deals to the protagonist when hit. 
+    /// </summary>
     public float damage = 30f;
+
+    // EFFECTS: //
+    public AudioSource explosionSound;
+    public ParticleSystem explosionParticles;
+    public ParticleSystem engineSmoke;
 
     private void Start()
     {
         protagonist = GameObject.Find("HullProtagonist");
         worldWill = GameObject.Find("WorldWill").GetComponent<WorldWill>();
-        audioSource = GetComponent<AudioSource>();
+        explosionSound = GetComponent<AudioSource>();
     }
 
     private void Update()
     {
-        //rotation
+        // Rotation
         Vector3 targetPos = protagonist.transform.position;
         transform.LookAt(targetPos);
-        // height restriction
+        // Height restriction
         if (transform.position.y <= -200 || transform.position.y >= 50)
         {
             StartCoroutine(Explode(false));
         }
-        // lifetime update
+        // Lifetime update
         lifetime -= Time.deltaTime;
         if (lifetime < 0)
         {
@@ -44,6 +53,7 @@ public class EnemyMissile : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // Move towards protagonist. 
         if (protagonist != null)
         {
             transform.position = Vector3.MoveTowards(
@@ -53,6 +63,7 @@ public class EnemyMissile : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        CoroutineUtils.Sleep(0.1f);
         if (collision.gameObject.name == "HullProtagonist")
         {
             StartCoroutine(Explode());
@@ -61,18 +72,26 @@ public class EnemyMissile : MonoBehaviour
         else if (collision.gameObject.name.Contains("shell"))
         {
             StartCoroutine(Explode());
-            Destroy(collision.gameObject);
+            collision.gameObject.GetComponent<Shell>().Vanish();
         }
     }
 
+    /// <summary>
+    /// Missile explodes: no more engine smoke, remove from missiles list, disable render
+    /// and generate wreck at position. Wait until all above happened and then destroy
+    /// the GameObject. 
+    /// </summary>
+    /// <param name="explosion">Set to false to destroy missile silently. </param>
+    /// <returns></returns>
     public IEnumerator Explode(bool explosion=true)
     {
+        engineSmoke.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         worldWill.currentMissiles.Remove(gameObject);
         Vector3 curPos = transform.position;
         gameObject.GetComponent<MeshRenderer>().enabled = false;
         if (explosion)
         {
-            audioSource.Play();
+            explosionSound.Play();
             explosionParticles.Play();
             worldWill.GenerateWreck(curPos);
             yield return new WaitForSeconds(1);

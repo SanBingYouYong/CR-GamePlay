@@ -5,46 +5,40 @@ using UnityEngine.AI;
 
 public class Movements : MonoBehaviour
 {
+    private MainGun mainGun;
 
-    public GameObject controlledGO;
-    public GameObject targetTerrain;
-
-    private float moveSpeed = 30f;
-    private float rotateSpeed = 100f;
+    public float moveSpeed = 30f;
+    public float moveSpeedFiring = 20f;
+    public float rotateSpeed = 100f;
+    public float rotateSpeedFiring = 20f;
 
     // Start is called before the first frame update
     void Start()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        // ClickMovement();
+        mainGun = GameObject.Find("MainGun.001").GetComponent<MainGun>();
     }
 
     private void FixedUpdate()
     {
-        var movementWS = transform.forward * Input.GetAxis("Vertical") * moveSpeed * Time.deltaTime;
-        Vector3 rotationAD = Vector3.up * Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
+        // Disable movements after being dead. 
+        if (!GetComponent<Protagonist>().alive)
+        {
+            return;
+        }
+        // Determine movements: firing slows down vehicle. 
+        Vector3 movementWS;
+        Vector3 rotationAD;
+        if (mainGun.firing)
+        {
+            movementWS = transform.forward * Input.GetAxis("Vertical") * moveSpeedFiring * Time.deltaTime;
+            rotationAD = Vector3.up * Input.GetAxis("Horizontal") * rotateSpeedFiring * Time.deltaTime;
+        }
+        else
+        {
+            movementWS = transform.forward * Input.GetAxis("Vertical") * moveSpeed * Time.deltaTime;
+            rotationAD = Vector3.up * Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
+        }
         transform.Rotate(rotationAD);
         transform.position += movementWS;
-    }
-
-    private void ClickMovement()
-    {
-        // obsolete click movement code: 
-        if (Input.GetMouseButtonDown(1))
-        {
-            RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (targetTerrain.GetComponent<Collider>().Raycast(ray, out hit, Mathf.Infinity))
-            {
-                controlledGO.transform.position = hit.point;
-                controlledGO.GetComponent<NavMeshAgent>().destination = hit.point;
-                controlledGO.GetComponent<NavMeshAgent>().updateRotation = false;
-            }
-        }
     }
 }
